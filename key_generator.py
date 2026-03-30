@@ -16,10 +16,10 @@ def generate_keys(name):
        with open(f"{name}_public.pem", "wb") as file:
               file.write(public_key)
               
-
-generate_keys("server")
-generate_keys("client1")
-generate_keys("client2")
-generate_keys("client3")
-generate_keys("client4")
-generate_keys("client5")
+def main():
+    generate_keys("server")
+    generate_keys("client1")
+    generate_keys("client2")
+    generate_keys("client3")
+    generate_keys("client4")
+    generate_keys("client5")

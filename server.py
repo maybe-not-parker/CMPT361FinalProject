@@ -3,7 +3,7 @@ import json
 import os
 import sys
 from datetime import datetime
-
+import key_generator.py
 PORT = 13000
 BUFFER_SIZE = 4096
 
@@ -26,13 +26,27 @@ def load_private_key(filename):
         return RSA.import_key(file.read())
     
 def load_public_key(filename):
+"""
+    What it does: obtains the server's public key
+    
+    Parameters:
+        filename: the name of the file that contains the server's public key
+        
+    Returns:
+        Public key ()
+    
+    
+    """
     with open(filename, "rb") as file:
         return RSA.import_key(file.read())
         
 def rsa_decrypt(key, data):
     """
-    Placeholder for RSA decryption.
-    Replace later with real server private key decryption.
+    What it does: Performs RSA decryption using the provided key and data.
+    Parameters:
+        key: the RSA key to use for decryption
+        data: the encrypted data to be decrypted
+    returns: the decrypted data as a string 
     """
     data_decoded = PKCS1_OAEP.new(key)
     return data_decoded.decrypt(data).decode()
@@ -40,27 +54,61 @@ def rsa_decrypt(key, data):
 
 def rsa_encrypt(key, data):
     """
-    Placeholder for RSA encryption.
-    Replace later if needed.
-    """
+    What it does: performs RSA encrpytion using the provided key and data.
+    Parameters:
+        key: the rsa key used for Encryption
+        data: the plaintext data to be encrypted
+    returns: the encrypted data
+""""
     data_encoded = PKCS1_OAEP.new(key)
     return data_encoded.encrypt(data)
 
+def 16byte_pad(data):
+    """
+    What it does: Adds padding to the plaintext data to ensure its length is a multiple of 16 bytes for AES encryption.
+    Parameters:
+        data: the plaintext data to be padded
+    Returns: the padded data as a string
+    """
+    padding_length = 16 - (len(data) % 16)
+    padding = chr(padding_length) * padding_length
+    return data + padding
+
+def 16byte_unpad(data):
+    """
+    What it does: Removes the padding from the decrypted data after AES decryption.
+    Parameters:
+        data: the decrypted data with padding
+    Returns: the original plaintext data with padding removed
+    """
+    padding_length = ord(data[-1])
+    return data[:-padding_length]
 
 def aes_encrypt(data, sym_key):
     """
-    Placeholder for AES encryption.
-    Replace later with AES ECB encryption.
+    What it does: perform AES encryption on the inputed data using the provided symmetric key.
+    Parameters:
+        data: the plaintext data to be encrypted
+        sym_key: the symmetric key used for encryption
+    Returns: the encrypted data as bytes with padding applied
     """
-    return data
+    cipher = AES.new(sym_key, AES.MODE_ECB)
+    padding = 16byte_pad(data)
+    return cipher.encrpyt(padding.encode())
 
 
 def aes_decrypt(data, sym_key):
-    """
-    Placeholder for AES decryption.
-    Replace later with AES ECB decryption.
-    """
-    return data
+    """"
+    What it does: Performs AES decryption on the input data using the provided symmetric key.
+    Parameters:
+        data: the encrypted data to be decrypted
+        sym_key: the symmetric key used for decryption
+    Returns: the decrypted data as a string with padding removed
+
+"""
+    cipher = AES.new(sym_key, AES.MODE_ECB)
+    decrypted_data = cipher.decrypt(data).decode()
+    return 16byte_unpad(decrypted_data)
 
 
 def generate_sym_key():
@@ -771,6 +819,8 @@ def main():
 
     Returns: None
     """
+    #generators the public and private keys from the key_generator.py file if they do not already exist
+    key_generator.main()
     # Load valid users from JSON file
     users = load_users()
     # Ensure each user has a folder for storing emails
